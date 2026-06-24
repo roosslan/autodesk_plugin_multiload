@@ -1,9 +1,9 @@
-#include "stdafx.h"
+п»ї#include "stdafx.h"
 #include "host_app.h"
 
 using namespace bi_loader;
 
-/* если nullptr, то возвращаем "" */
+/* РµСЃР»Рё nullptr, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРј "" */
 template<typename T>
 string notnull(T value) {
     return value != nullptr ? value->ToString() : String::Empty;
@@ -85,7 +85,7 @@ void host_app::copy_directory(const string source_dir, const string dest_dir) {
     }
 }
 
-/* Собираем в массив все кнопки с их данными со вкладки BIM */
+/* РЎРѕР±РёСЂР°РµРј РІ РјР°СЃСЃРёРІ РІСЃРµ РєРЅРѕРїРєРё СЃ РёС… РґР°РЅРЅС‹РјРё СЃРѕ РІРєР»Р°РґРєРё BIM */
 int host_app::collect_buttons() {
     RibbonControl^ ribbon_control = ComponentManager::Ribbon;
     auto commands = host_app::commands;
@@ -110,7 +110,7 @@ int host_app::collect_buttons() {
                         for each (Autodesk::Windows::RibbonItem^ ri in ribbon_item_collection) {
                             if (ri->Id != nullptr && ri->Id != "") {
 	                            addin_update au_btn;
-                                /* button.id это строка вида CustomCtrl_%CustomCtrl_%IMJA_WKLADKI%ИмяПанели%EineKommando, парсим и панель и команду  */
+                                /* button.id СЌС‚Рѕ СЃС‚СЂРѕРєР° РІРёРґР° CustomCtrl_%CustomCtrl_%IMJA_WKLADKI%РРјСЏРџР°РЅРµР»Рё%EineKommando, РїР°СЂСЃРёРј Рё РїР°РЅРµР»СЊ Рё РєРѕРјР°РЅРґСѓ  */
                                 array<string>^ tokens = ri->Id->Split('%');
                                 if (tokens->Length >= 2) {                                    
                                     au_btn.command = tokens[tokens->Length - 1];
@@ -134,6 +134,7 @@ int host_app::collect_buttons() {
     }
     return 0;
 }
+
 UI::RibbonPanel^ host_app::get_panel(const string tab_name, const string panel_name) {
     
     auto revit_panels = host_app::uic_application->GetRibbonPanels(tab_name);
@@ -170,10 +171,10 @@ void host_app::clear_panels(const string tab_name) {
                     for each (ad::RibbonPanel^ ribbon_panel in tab->Panels) {
 
                         ribbon_item_collection = ribbon_panel->Source->Items;
-                        /* Удаляем push_buttons */
+                        /* РЈРґР°Р»СЏРµРј push_buttons */
 
                         for each (Autodesk::Windows::RibbonItem^ ri in ribbon_item_collection) {
-                            if (ri->Text != "Доставить\nобновления")
+                            if (ri->Text != "Р”РѕСЃС‚Р°РІРёС‚СЊ\nРѕР±РЅРѕРІР»РµРЅРёСЏ")
                                buttons_to_remove->Add(ri);                               
                         }
 
@@ -191,10 +192,10 @@ void host_app::clear_panels(const string tab_name) {
 
 bool host_app::is_netpath_available(const std::wstring& path, const int timeout_ms) {
 
-	/* Используем async с таймаутом для обхода зависаний */
+	/* РСЃРїРѕР»СЊР·СѓРµРј async СЃ С‚Р°Р№РјР°СѓС‚РѕРј РґР»СЏ РѕР±С…РѕРґР° Р·Р°РІРёСЃР°РЅРёР№ */
     auto future = std::async(std::launch::async, [path]() -> bool {
 
-	    /* Пробуем открыть временный файл для проверки доступа */
+	    /* РџСЂРѕР±СѓРµРј РѕС‚РєСЂС‹С‚СЊ РІСЂРµРјРµРЅРЅС‹Р№ С„Р°Р№Р» РґР»СЏ РїСЂРѕРІРµСЂРєРё РґРѕСЃС‚СѓРїР° */
 	    std::wstring test_path = path;
 	    if (test_path.back() != L'\\' && test_path.back() != L'/')
 	        test_path += L'\\';
@@ -222,7 +223,7 @@ bool host_app::is_netpath_available(const std::wstring& path, const int timeout_
 }
 
 static array<Byte>^ get_key() {
-    /* 32 байта (AES-256) */
+    /* 32 Р±Р°Р№С‚Р° (AES-256) */
     auto k = gcnew array<Byte>(32);
 
     for (int i = 0; i < k->Length; i++) {

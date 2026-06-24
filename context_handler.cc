@@ -1,4 +1,4 @@
-#include "stdafx.h"
+п»ї#include "stdafx.h"
 
 #include "context_handler.h"
 
@@ -14,7 +14,7 @@ namespace bi_loader {
         UIDocument^ uiDoc = app->ActiveUIDocument;
 
         if (doc == nullptr) {
-            TaskDialog::Show("External Event apiWrapper", "Не удалось получить активный документ Revit!");
+            TaskDialog::Show("External Event wrapper_into_context", "РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ Р°РєС‚РёРІРЅС‹Р№ РґРѕРєСѓРјРµРЅС‚ Revit!");
             return;
         }
         */
@@ -23,7 +23,7 @@ namespace bi_loader {
     }
     catch (const std::exception& e) {
         (void)e;
-        /* File::AppendAllText("\\bi_loader.dev.log", DateTime::Now.ToString("dd.MM.yyyy hh:mm tt") + "apiWrapper::Execute ");  */
+        /* File::AppendAllText("\\bi_loader.dev.log", DateTime::Now.ToString("dd.MM.yyyy hh:mm tt") + "wrapper_into_context::Execute ");  */
     }
 
     void wrapper_into_context::task_run_async_in_context(UIApplication^ app) {
@@ -37,7 +37,7 @@ namespace bi_loader {
     /* virtual */
     string wrapper_into_context::GetName() {
         /* throw gcnew System::NotImplementedException();   */
-        return ("External Event apiWrapper");
+        return ("External Event wrapper_into_context");
     }
 
 }

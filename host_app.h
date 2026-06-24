@@ -32,7 +32,8 @@ namespace bi_loader {
         void delegate_on_application_initialized(object sender, ApplicationInitializedEventArgs^ e);        
 
 /*      Assembly^ Load(AssemblyLoadContext^ assembly_load_context, string file_path);
-        void delegate_component_manager_ui_element_activated(object sender, UIElementActivatedEventArgs^ e);  */
+        void delegate_component_manager_ui_element_activated(object sender, UIElementActivatedEventArgs^ e);
+*/
     public:
         host_app();
 
