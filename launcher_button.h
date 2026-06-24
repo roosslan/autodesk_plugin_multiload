@@ -1,4 +1,4 @@
-#pragma once
+п»ї#pragma once
 
 #include "stdafx.h"
 #include "isolated_load_context.h"
@@ -6,7 +6,7 @@
 namespace bi_loader {
 	
     [Transaction(TransactionMode::Manual)]
-	/* Љласс-обработчик нажатиЯ кнопки запуска ifc exporter.exe */
+	/* РљР»Р°СЃСЃ-РѕР±СЂР°Р±РѕС‚С‡РёРє РЅР°Р¶Р°С‚РёСЏ РєРЅРѕРїРєРё Р·Р°РїСѓСЃРєР° ifc exporter.exe */
     public ref class btn_click sealed : IExternalCommand {
     public:
         virtual Result Execute(ExternalCommandData^ command_data, string% message, ElementSet^ elements);

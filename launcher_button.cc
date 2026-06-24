@@ -1,4 +1,4 @@
-#include "launcher_button.h"
+п»ї#include "launcher_button.h"
 #include "host_app.h"
 #include "sensitive_data.h"
 
@@ -10,7 +10,7 @@ namespace bi_loader {
     }
 
     Result btn_click::Execute(ExternalCommandData^ command_data, string% message, ElementSet^ elements) {
-        /* Сюда ссылается ф-ция host_app::create_ribbon_buttons() ...  gcnew PushButtonData("ID_UPDATE26_BUTTON" ...); */
+        /* РЎСЋРґР° СЃСЃС‹Р»Р°РµС‚СЃСЏ С„-С†РёСЏ host_app::create_ribbon_buttons() ...  gcnew PushButtonData("ID_UPDATE26_BUTTON" ...); */
 
 		const auto upd_directory = gcnew String(update_directory);
         try {
@@ -27,16 +27,16 @@ namespace bi_loader {
 
                 /* Load the assembly from temp directory */
                 const auto comm_dll_path = Path::Combine(temp_directory, host_app::main_addin_dll_name);               
-                const auto assebmly_version_info = System::Diagnostics::FileVersionInfo::GetVersionInfo(comm_dll_path);
+                const auto assembly_version_info = System::Diagnostics::FileVersionInfo::GetVersionInfo(comm_dll_path);
 
-                host_app::last_loaded_ver = assebmly_version_info->FileVersion;
+                host_app::last_loaded_ver = assembly_version_info->FileVersion;
                 const auto loaded_version = gcnew Version(host_app::last_loaded_ver);
 
                 host_app::collect_buttons();
                 /* remove_button(bim_panel, "BIM Profile"); */
 
                 auto new_commands = gcnew List<addin_update>();
-                /* Выбираем из массива команд БД только подходящие (новые, новее) */
+                /* Р’С‹Р±РёСЂР°РµРј РёР· РјР°СЃСЃРёРІР° РєРѕРјР°РЅРґ Р‘Р” С‚РѕР»СЊРєРѕ РїРѕРґС…РѕРґСЏС‰РёРµ (РЅРѕРІС‹Рµ, РЅРѕРІРµРµ) */
                 auto upd_rows = host_app::get_version_from_db();
                 if (upd_rows->Length != 0)
                     for each (const auto db_command in upd_rows) {
@@ -54,9 +54,9 @@ namespace bi_loader {
                 const auto bim_panel = gcnew String(wpanel_name);
                 host_app::clear_panels(bim_panel);
 
-                /* Создаём контролы, полученные из БД */
+                /* РЎРѕР·РґР°С‘Рј РєРѕРЅС‚СЂРѕР»С‹, РїРѕР»СѓС‡РµРЅРЅС‹Рµ РёР· Р‘Р” */
                 for (int i = 0; i < new_commands->Count; ++i) {
-                    /* Обычная кнопка */
+                    /* РћР±С‹С‡РЅР°СЏ РєРЅРѕРїРєР° */
                     if (new_commands[i].button_type == "pushbutton" && new_commands[i].parent_button == 0) {
                         auto btn_runcmd_dll = gcnew PushButtonData(Guid::NewGuid().ToString(), new_commands[i].button_text, comm_dll_path, new_commands[i].command);
                         btn_runcmd_dll->LargeImage = gcnew BitmapImage(gcnew Uri(temp_directory + "\\" + new_commands[i].large_image));
@@ -64,6 +64,7 @@ namespace bi_loader {
                         btn_runcmd_dll->AvailabilityClassName = "revit_addin26.Utilities.Availability";
                         dynamic_cast<PushButton^>(host_app::get_panel(bim_panel, new_commands[i].panel_name)->AddItem(btn_runcmd_dll));
                     }
+
                     /* Pulldown-button */
                     if (new_commands[i].button_type == "pulldown" && new_commands[i].parent_button == 0) {
                         auto btn_pulldown_data = gcnew PulldownButtonData(Guid::NewGuid().ToString(), new_commands[i].button_text);

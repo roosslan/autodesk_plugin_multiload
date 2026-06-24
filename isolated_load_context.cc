@@ -1,4 +1,4 @@
-#include "isolated_load_context.h"
+п»ї#include "isolated_load_context.h"
 
 using namespace bi_loader;
 
@@ -15,17 +15,18 @@ Assembly^ isolated_load_context::Load(AssemblyName^ assembly_name) {
         if (assembly_path->Contains("RevitAPI")) {
             return nullptr;
         }
-        if (assembly_path->Contains("RevitAPIUI"))  {
+        if (assembly_path->Contains("RevitAPIUI")) {
             return nullptr;
         }
-/*      Если зависимость плагина найдена, загружаем её в контекст плагина:
+/*
+        Р•СЃР»Рё Р·Р°РІРёСЃРёРјРѕСЃС‚СЊ РїР»Р°РіРёРЅР° РЅР°Р№РґРµРЅР°, Р·Р°РіСЂСѓР¶Р°РµРј РµС‘ РІ РєРѕРЅС‚РµРєСЃС‚ РїР»Р°РіРёРЅР°:
         auto stream = gcnew FileStream(assembly_path, FileMode::Open, FileAccess::Read);        
         return LoadFromStream(stream);
 */
         return LoadFromAssemblyPath(assembly_path);
     }
 
-    /* Иначе возвращаем nullptr – пусть runtime попытается загрузить в контекст по умолчанию (fall back to default ALC) */
+    /* РРЅР°С‡Рµ РІРѕР·РІСЂР°С‰Р°РµРј nullptr вЂ“ РїСѓСЃС‚СЊ runtime РїРѕРїС‹С‚Р°РµС‚СЃСЏ Р·Р°РіСЂСѓР·РёС‚СЊ РІ РєРѕРЅС‚РµРєСЃС‚ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ (fall back to default ALC) */
     return nullptr;
 }
 

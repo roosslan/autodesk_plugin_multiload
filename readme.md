@@ -1,5 +1,6 @@
-SELECT TOP (1000) [button_id] int
->,[button_text]	nvarchar(MAX) \
+SELECT TOP (100)
+>[button_id] int \
+      ,[button_text]	nvarchar(MAX) \
       ,[command]	nvarchar(MAX) \
       ,[large_image]	nvarchar(MAX) \
       ,[image]	nvarchar(MAX) \
