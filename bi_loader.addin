@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>bimanager</Name>
+    <Text>BIM development</Text>
+    <FullClassName>bi_loader.host_app</FullClassName>
+    <VisibilityMode>AlwaysVisible</VisibilityMode>
+    <Assembly>..\Build\bi_loader.dll</Assembly>
+    <AddInId>cabba1a2-dead-babe-b00b-ca11ab1e10ad</AddInId>
+    <VendorId>BIM development</VendorId>
+    <VendorDescription>BIM Al Development, www.development.xxxxxxx.xxx</VendorDescription>
+  </AddIn>
+  <ManifestSettings>
+    <UseRevitContext>False</UseRevitContext>
+  </ManifestSettings>
+</RevitAddIns>
