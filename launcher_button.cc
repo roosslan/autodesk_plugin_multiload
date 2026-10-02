@@ -25,6 +25,20 @@ namespace bi_loader {
                 /* Copy all files to temp directory */
                 bi_loader::host_app::copy_directory(assembly_directory, temp_directory);
 
+                /* Проверяем скопированные файлы (а не шару, чтобы исключить подмену после проверки) по манифесту SHA-256 из БД */
+                string verify_error;
+                const auto manifest = host_app::get_manifest_from_db(verify_error);
+                if (manifest == nullptr || !host_app::verify_manifest(temp_directory, manifest, verify_error)) {
+                    try {
+                        Directory::Delete(temp_directory, true);
+                    }
+                    catch (exception) {
+                        /* временную директорию удалит конструктор host_app при следующем запуске */
+                    }
+                    UI::TaskDialog::Show("Обновление отклонено", "Проверка целостности файлов обновления не пройдена.\n\n" + verify_error);
+                    return Result::Cancelled;
+                }
+
                 /* Load the assembly from temp directory */
                 const auto comm_dll_path = Path::Combine(temp_directory, host_app::main_addin_dll_name);               
                 const auto assembly_version_info = System::Diagnostics::FileVersionInfo::GetVersionInfo(comm_dll_path);

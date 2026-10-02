@@ -9,18 +9,22 @@ string notnull(T value) {
     return value != nullptr ? value->ToString() : String::Empty;
 }
 
+/* Строка подключения к БД. Учётная запись в sensitive_data.h должна иметь только SELECT на addin_updates и addin_manifest (см. sql/addin_manifest.sql) */
+static string build_connection_string() {
+    auto builder = gcnew SqlConnectionStringBuilder();
+    builder->DataSource = gcnew String(wdb_hostname);
+    builder->InitialCatalog = gcnew String(wdb_name);
+    builder->UserID = gcnew String(wdb_user);
+    builder->Password = gcnew String(wdb_passwd);
+    builder->ConnectTimeout = 5;
+    return builder->ConnectionString;
+}
+
 array<addin_update>^ host_app::get_version_from_db()
 try {
     auto updates_list = gcnew List<addin_update>();
 
-	const auto db_hostname = gcnew String(wdb_hostname);
-    const auto db_name = gcnew String(wdb_name);
-    const auto db_user = gcnew String(wdb_user);
-    const auto db_passwd = gcnew String(wdb_passwd);
-
-    const string connection_string = "data source=" + db_hostname + ";initial catalog=" + db_name + ";user id=" + db_user + ";password=" + db_passwd + ";";
-
-    auto conn = gcnew SqlConnection(connection_string);
+    auto conn = gcnew SqlConnection(build_connection_string());
     conn->Open();
     const string sql_query = "select button_id, parent_button, button_type, button_text, command, large_image, image, tool_tip, panel_name, version from addin_updates";
     auto sqlcmd = gcnew SqlCommand(sql_query, conn);
@@ -59,6 +63,87 @@ catch (exception ex) {
     return gcnew array<addin_update>(0);
 }
 
+Dictionary<string, string>^ host_app::get_manifest_from_db(string% error)
+try {
+    auto manifest = gcnew Dictionary<string, string>(StringComparer::OrdinalIgnoreCase);
+
+    auto conn = gcnew SqlConnection(build_connection_string());
+    try {
+        conn->Open();
+        auto sqlcmd = gcnew SqlCommand("select relative_path, sha256 from addin_manifest", conn);
+        auto reader = sqlcmd->ExecuteReader();
+        try {
+            while (reader->Read()) {
+                /* пути в манифесте нормализуем к виду с обратной косой чертой */
+                const string relative_path = reader["relative_path"]->ToString()->Replace('/', '\\')->Trim();
+                manifest[relative_path] = reader["sha256"]->ToString()->Trim();
+            }
+        }
+        finally {
+            reader->Close();
+        }
+    }
+    finally {
+        conn->Close();
+    }
+    return manifest;
+}
+catch (exception ex) {
+    error = ex->Message;
+    return nullptr;
+}
+
+/* SHA-256 файла в виде строки из 64 шестнадцатеричных символов */
+static string compute_sha256(string file_path) {
+    auto sha = SHA256::Create();
+    auto stream = File::OpenRead(file_path);
+    try {
+        return BitConverter::ToString(sha->ComputeHash(stream))->Replace("-", "");
+    }
+    finally {
+        delete stream;
+        delete sha;
+    }
+}
+
+bool host_app::verify_manifest(string directory, Dictionary<string, string>^ manifest, string% error) {
+    if (manifest == nullptr || manifest->Count == 0) {
+        error = "Манифест SHA-256 в БД пуст или недоступен";
+        return false;
+    }
+
+    const string root = Path::GetFullPath(directory)->TrimEnd('\\') + "\\";
+
+    /* Каждый файл из манифеста должен присутствовать и совпадать по хешу */
+    for each (KeyValuePair<string, string> entry in manifest) {
+        const string full_path = Path::GetFullPath(Path::Combine(root, entry.Key));
+        if (!full_path->StartsWith(root, StringComparison::OrdinalIgnoreCase)) {
+            error = "Недопустимый путь в манифесте: " + entry.Key;
+            return false;
+        }
+        if (!File::Exists(full_path)) {
+            error = "Файл из манифеста не найден: " + entry.Key;
+            return false;
+        }
+        if (!String::Equals(compute_sha256(full_path), entry.Value, StringComparison::OrdinalIgnoreCase)) {
+            error = "Хеш SHA-256 не совпадает с манифестом: " + entry.Key;
+            return false;
+        }
+    }
+
+    /* Любой исполняемый файл, которого нет в манифесте, считается посторонним */
+    for each (string file in Directory::GetFiles(root, "*", SearchOption::AllDirectories)) {
+        const string ext = Path::GetExtension(file);
+        if (!ext->Equals(".dll", StringComparison::OrdinalIgnoreCase) && !ext->Equals(".exe", StringComparison::OrdinalIgnoreCase))
+            continue;
+        const string relative_path = file->Substring(root->Length);
+        if (!manifest->ContainsKey(relative_path)) {
+            error = "Исполняемый файл отсутствует в манифесте: " + relative_path;
+            return false;
+        }
+    }
+    return true;
+}
 
 void host_app::copy_directory(const string source_dir, const string dest_dir) {
     /* Create destination directory if it doesn't exist */
@@ -190,36 +275,37 @@ void host_app::clear_panels(const string tab_name) {
     }
 }
 
+/* Проверка доступности сетевого пути в фоновом потоке: недоступная шара не должна подвешивать Revit */
+ref class net_path_probe {
+    string path_;
+public:
+    bool available;
+
+    net_path_probe(string path) : path_(path), available(false) {}
+
+    void run() {
+        try {
+            available = Directory::Exists(path_);
+        }
+        catch (exception) {
+            available = false;
+        }
+    }
+};
+
 bool host_app::is_netpath_available(const std::wstring& path, const int timeout_ms) {
+    if (path.empty())
+        return false;
 
-	/* Используем async с таймаутом для обхода зависаний */
-    auto future = std::async(std::launch::async, [path]() -> bool {
+    auto probe = gcnew net_path_probe(gcnew String(path.c_str()));
+    auto thread = gcnew Thread(gcnew ThreadStart(probe, &net_path_probe::run));
+    /* фоновый поток не мешает закрытию Revit, даже если запрос к шаре так и не вернулся */
+    thread->IsBackground = true;
+    thread->Start();
 
-	    /* Пробуем открыть временный файл для проверки доступа */
-	    std::wstring test_path = path;
-	    if (test_path.back() != L'\\' && test_path.back() != L'/')
-	        test_path += L'\\';
-	    test_path += L".network_test_tmp";
-
-	    const HANDLE h_file = CreateFileW(
-	        test_path.c_str(),
-	        GENERIC_WRITE,
-	        FILE_SHARE_READ,
-	        nullptr,
-	        CREATE_ALWAYS,
-	        FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
-	        nullptr
-	    );
-
-	    if (h_file != INVALID_HANDLE_VALUE) {
-	        CloseHandle(h_file);
-	        return true;
-	    }
-	    return false;
-    });
-
-    const auto status = future.wait_for(std::chrono::milliseconds(timeout_ms));
-    return (status == std::future_status::ready) && future.get();
+    if (!thread->Join(timeout_ms))
+        return false;
+    return probe->available;
 }
 
 static array<Byte>^ get_key() {
