@@ -43,6 +43,10 @@ namespace bi_loader {
         
         static array<Type^>^ commands;
         static array<addin_update>^ get_version_from_db();
+        /* Манифест SHA-256 (относительный путь -> хеш) из БД. При ошибке возвращает nullptr и текст ошибки */
+        static Dictionary<string, string>^ get_manifest_from_db(string% error);
+        /* Сверяет все исполняемые файлы (.dll/.exe) директории с манифестом */
+        static bool verify_manifest(string directory, Dictionary<string, string>^ manifest, string% error);
         static string last_loaded_ver;
         
         static List<addin_update>^ buttons_list = gcnew List<addin_update>();
