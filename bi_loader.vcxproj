@@ -81,11 +81,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="func.cc" />
-    <ClCompile Include="launcher_button.cc" />
-    <ClCompile Include="context_handler.cc" />
-    <ClCompile Include="isolated_load_context.cc" />
-    <ClCompile Include="host_app.cc" />
+    <ClCompile Include="src\func.cc" />
+    <ClCompile Include="src\launcher_button.cc" />
+    <ClCompile Include="src\context_handler.cc" />
+    <ClCompile Include="src\isolated_load_context.cc" />
+    <ClCompile Include="src\host_app.cc" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="sql_client">
@@ -114,13 +114,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="launcher_button.h" />
-	<ClInclude Include="sensitive_data.h" />
-    <ClInclude Include="context_handler.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="isolated_load_context.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="host_app.h" />
+    <ClInclude Include="src\launcher_button.h" />
+	<ClInclude Include="src\sensitive_data.h" />
+    <ClInclude Include="src\context_handler.h" />
+    <ClInclude Include="src\resource.h" />
+    <ClInclude Include="src\isolated_load_context.h" />
+    <ClInclude Include="src\stdafx.h" />
+    <ClInclude Include="src\host_app.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
